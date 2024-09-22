@@ -3,66 +3,12 @@
 // 1-init
 #include "philosophers.h"
 
-// int	is_someone_dead(t_data *data)
-// {
-// 	pthread_mutex_lock(&(data->dead));
-// 	if (data->someone_died)
-// 	{
-// 		pthread_mutex_unlock(&(data->dead));
-// 		return (1);
-// 	}
-// 	pthread_mutex_unlock(&(data->dead));
-// 	return (0);
-// }
-
-// int	is_someone_finished(t_data *data)
-// {
-// 	pthread_mutex_lock(&(data->finished));
-// 	if (data->someone_finished)
-// 	{
-// 		pthread_mutex_unlock(&(data->finished));
-// 		return (1);
-// 	}
-// 	pthread_mutex_unlock(&(data->finished));
-// 	return (0);
-// }
-
-// void	set_someone_finished(t_data *data)
-// {
-// 	pthread_mutex_lock(&(data->finished));
-// 	data->someone_finished = 1;
-// 	pthread_mutex_unlock(&(data->finished));
-// }
-
-// int	eat_enough(t_data *data)
-// {
-// 	int		i;
-// 	int		count;
-
-// 	count = 0;
-// 	i = 0;
-// 	if (!data->n_eat)
-// 		return (0);
-// 	while (i < data->n_phil)
-// 	{
-// 		pthread_mutex_lock(&(data->philo[i].eating_mtx));
-// 		if (data->n_eat <= data->philo[i].eat_counter)
-// 			count++;
-// 		pthread_mutex_unlock(&(data->philo[i].eating_mtx));
-// 		i++;
-// 	}
-// 	if (i <= count)
-// 		return (1);
-// 	return (0);
-// }
 
 int is_philo_dead(t_philo *philo)
 {
 	if (current_time() - philo->last_eat > philo->data->t_die)
 	{
 		philo->whatsapp=0;
-		//philo->data->someone_died = 1;
-		//printf("dead");
 		return (1);
 	}
 		
@@ -70,25 +16,11 @@ int is_philo_dead(t_philo *philo)
 		return (0);
 }
 
-int is_philo_full(t_philo *philo)
-{
-	int res;
-	res= (philo->eat_counter >= philo->data->n_eat && (philo->data->n_eat > 0));
-	if (res)
-	{
-		//philo->data->someone_finished = 1;
-		//printf("deaddd");
-	}
-		
-	return(res);
-}
 
 void	printdead(t_philo *philo, char *str)
 {
-		//pthread_mutex_lock(&(philo->data->print));
 		printf("%lld %d %s\n", current_time() - philo->data->t_start,
 			philo->n, str);
-		//pthread_mutex_unlock(&(philo->data->print));
 }
 
 void	check_status(t_philo *philo,t_data	*data)
@@ -106,53 +38,33 @@ void	check_status(t_philo *philo,t_data	*data)
 			pthread_mutex_lock(&(data->print));
 			if (current_time() - philo[i].last_eat > data->t_die)
 			{
-				//pthread_mutex_lock(&(data->mtx_someone_died));
 				data->someone_died = 1;
-				//philo[i].whatsapp=0;
-				// printf("%d\n",data->someone_died);
-				// printf("%d\n",data->philo[i].eat_counter);
-				// printf("%d\n",data->n_eat);
 				if(data->n_eat<1 || philo[i].eat_counter < data->n_eat)
 					{
-						//printf("jjjjjjj\n");
 						printdead(data->philo, " died");
-						//printf("kkkkk\n");
 					}
-				
-				//pthread_mutex_unlock(&(data->mtx_someone_died));
-				//pthread_mutex_unlock(&(data->philo[i].eating_mtx));
 				pthread_mutex_unlock(&(data->stop));
 				pthread_mutex_unlock(&(data->print));
 				break ;
 			}
 			pthread_mutex_unlock(&(data->stop));
 			pthread_mutex_unlock(&(data->print));
-			//if (eat_enough(data))
-			//	set_someone_finished(data);
 			pause_time(1);
 			i++;
 		}
 	}
-	//return (exit_code(data));
 }
-
-
-
-
 
 
 // 2-philo
 void	start_thread(t_data *data)
 {
 	int				i;
-	//pthread_t		check;
 
 	i = 0;
-	//data->someone_died = 0;
-	//data->someone_finished = 0;
+
 	while (i < data->n_phil)
 	{
-		//data->philo[i].last_eat = current_time();
 		if (pthread_create(&(data->philo[i].tid), NULL,
 				&routin, &(data->philo[i])) != 0)
 		{
@@ -161,11 +73,7 @@ void	start_thread(t_data *data)
 		}
 		i++;
 	}
-	//pthread_create(&check, NULL, check_status, data);
-	//******
-	//a function for checking all
 	check_status((t_philo *)(data->philo),data);
-	//printf("dddd%d\n",data->someone_died);
 	i = 0;
 	while (i < data->n_phil)
 	{
@@ -176,8 +84,6 @@ void	start_thread(t_data *data)
 		}
 		i++;
 	}
-		
-	//pthread_join(check, NULL);
 }
 
 t_forks	*take_first_fork(int i, t_data *data)
@@ -206,7 +112,6 @@ t_forks	*take_second_fork(int i, t_data *data)
 void	initialize_philo(t_data *data)
 {
 	int				i;
-	//pthread_mutex_t	*fork_array;
 
 	i = 0;
 	while (i < data->n_phil)
@@ -214,13 +119,9 @@ void	initialize_philo(t_data *data)
 		data->philo[i].n = i + 1;
 		data->philo[i].eat_counter = 0;
 		data->philo[i].whatsapp = 1;
-		//data->philo[i].data = data;
 		data->philo[i].last_eat = current_time();
 		i++;
 	}
-	// fork_array = malloc(sizeof(pthread_mutex_t) * data->n_phil);
-	// if (!fork_array)
-	// 	perror("Memory allocation failed");
 	i=0;
 	while (i < data->n_phil)
 	{
@@ -233,19 +134,11 @@ void	initialize_philo(t_data *data)
 	{
 		data->philo[i].fork_right=take_first_fork(i, data);
 		data->philo[i].fork_left=take_second_fork(i, data);
-		//data->philo[i].fork_right = &fork_array[i];
 		data->philo[i].data = data;
-		//pthread_mutex_init(&fork_array[i], NULL);
-		// pthread_mutex_init(&(data->philo[i].eating_mtx), NULL);
-		// if (i == data->n_phil - 1)
-		// 	data->philo[0].fork_left = &fork_array[i];
-		// else
-		// 	data->philo[i + 1].fork_left = &fork_array[i];
 		 i++;
 	}
 	
 	start_thread(data);
-	//return (fork_array);
 }
 
 void	free_datas( t_data *data, t_philo *philo)
@@ -268,16 +161,12 @@ void	free_datas( t_data *data, t_philo *philo)
 void	parse_variable(char **argv)
 {
 	t_data			*data;
-	//pthread_mutex_t	*forks;
 
 	data = malloc(sizeof(t_data));
 	if (!data)
 		perror("Memory allocation failed");
 	pthread_mutex_init(&(data->print), NULL);
 	pthread_mutex_init(&data->stop, NULL);
-	//pthread_mutex_init(&data->stop, NULL);
-	//pthread_mutex_init(&data->finished, NULL);
-	//pthread_mutex_init(&data->mtx_someone_died, NULL);
 	data->n_phil = ft_atoi(argv[1]);
 	data->t_die = ft_atoi(argv[2]);
 	data->t_eat = ft_atoi(argv[3]);
@@ -296,7 +185,6 @@ void	parse_variable(char **argv)
 		return ;
 	data->t_start = current_time();
 	initialize_philo(data);
-	//free_datas(forks, data, data->philo);
 	free_datas( data, data->philo);
 }
 
@@ -322,30 +210,20 @@ long long	current_time(void)
 
 void	printeat(t_philo *philo, char *str)
 {
-	// pthread_mutex_lock(&(philo->data->dead));
-	// if (!philo->data->someone_died && !eat_enough(philo->data))
-	// {
 		pthread_mutex_lock(&(philo->data->print));
 		philo->last_eat = current_time();
 		printf("%lld %d %s\n", current_time() - philo->data->t_start,
 			philo->n, str);
 		pthread_mutex_unlock(&(philo->data->print));
-	//}
-	//pthread_mutex_unlock(&(philo->data->dead));
 }
 
 void	print(t_philo *philo, char *str)
 {
-	// pthread_mutex_lock(&(philo->data->dead));
-	// if (!philo->data->someone_died && !eat_enough(philo->data))
-	// {
 		pthread_mutex_lock(&(philo->data->print));
 		if (!philo->data->someone_died)
 			printf("%lld %d %s\n", current_time() - philo->data->t_start,
 			philo->n, str);
 		pthread_mutex_unlock(&(philo->data->print));
-	//}
-	//pthread_mutex_unlock(&(philo->data->dead));
 }
 
 void	pause_time(int t)
@@ -357,37 +235,6 @@ void	pause_time(int t)
 		usleep(t / 11);
 }
 
-
-//4- routin
-
-// int	test_(t_philo *philo)
-// {
-// 	if (!philo->data->n_eat)
-// 		return (0);
-// 	pthread_mutex_lock(&(philo->eating_mtx));
-// 	if (philo->eat_counter == philo->data->n_eat)
-// 	{
-// 		pthread_mutex_unlock(&(philo->eating_mtx));
-// 		return (1);
-// 	}
-// 	pthread_mutex_unlock(&(philo->eating_mtx));
-// 	return (0);
-// }
-
-// void	eating1(t_philo *philo)
-// {
-// 	if (!test_(philo))
-// 	{
-// 		print(philo, " is eating");
-// 		philo->eat_counter++;
-// 		pthread_mutex_lock(&(philo->eating_mtx));
-// 		philo->last_eat = current_time();
-// 		pthread_mutex_unlock(&(philo->eating_mtx));
-// 		pause_time(philo->data->t_eat);
-// 		pthread_mutex_unlock(philo->fork_left);
-// 		pthread_mutex_unlock(philo->fork_right);
-// 	}
-// }
 void	taking_right_fork(t_philo *philo)
 {
 	pthread_mutex_lock(&(philo->fork_right->theforks));
@@ -401,13 +248,10 @@ void	taking_left_fork(t_philo *philo)
 
 int	eating2(t_philo	*d)
 {
-	//grab_forks(&(d->right_fork->fork), d);
-	
 	if (d->fork_left)
 	{
 		taking_left_fork(d);
 		pthread_mutex_lock(&(d->data->stop));
-		//printf("ggg%d\n",d->data->someone_died);
 		if (d->data->someone_died)
 		{
 			pthread_mutex_unlock(&(d->data->stop));
@@ -416,7 +260,6 @@ int	eating2(t_philo	*d)
 			return (0);
 		}
 		printeat(d, " is eating");
-		//d->last_eat = current_time();
 		d->eat_counter++;
 		pthread_mutex_unlock(&(d->data->stop));
 		pause_time(d->data->t_eat);
@@ -427,9 +270,6 @@ int	eating2(t_philo	*d)
 	return (1);
 }
 
-
-// int is_philo_full(t_philo *philo)
-// int is_philo_dead(t_philo *philo)
 void	*routin(void *arg)
 {
 	t_philo		*philo1;
@@ -437,16 +277,9 @@ void	*routin(void *arg)
 	philo1 = (t_philo *)arg;
 	if ((philo1->n) % 2 == 0)
 		pause_time(philo1->data->t_eat / 11);
-	//  printf("88888888%d\n",philo->data->someone_died);
-	//  printf("%d\n",!(is_philo_dead(philo)));
-	//  printf("%d\n",(philo->whatsapp));
+
 	while (!(is_philo_dead(philo1)) && (philo1->whatsapp) &&  ((philo1->data->n_eat < 1) || (philo1->eat_counter < philo1->data->n_eat)))
 	{
-		// printf("wwww%d\n",philo->whatsapp);
-		// printf("fff%d\n",philo->data->someone_died);
-		// printf("%d\n",!(is_philo_dead(philo)));
-	 	// printf("%d\n",(philo->whatsapp));
-		//taking_right_fork(philo);
 		taking_right_fork(philo1);
 		if(!eating2(philo1))
 			return (NULL);
@@ -460,10 +293,6 @@ void	*routin(void *arg)
 }
 
 //5-utils
-//int	ft_isspace(int c)
-//{
-//	return ((c >= 9 && c <= 13) || c == 32);
-//}
 
 int	is_digit(char *args)
 {
@@ -529,38 +358,3 @@ int	is_valid_integer(char **args)
 	return (1);
 }
 
-/*long	long_atoi(char *str)
-{
-	int			i;
-	int			flag;
-	long		num;
-
-	i = 0;
-	flag = 1;
-	num = 0;
-	while (ft_isspace(str[i]))
-		i++;
-	if (str[i] == '+' || str[i] == '-')
-	{
-		if (str[i] == '-')
-			flag *= -1;
-		i++;
-	}
-	while (ft_isdigit(str[i]))
-	{
-		num = num * 10 + (str[i] - '0');
-		i++;
-	}
-	return (flag * num);
-}
-*/
-
-// void	*exit_code(t_data *data)
-// {
-// 	int		i;
-
-// 	i = 0;
-// 	while (i < data->n_phil)
-// 		pthread_mutex_unlock(data->philo[i++].fork_right);
-// 	return (NULL);
-// }
